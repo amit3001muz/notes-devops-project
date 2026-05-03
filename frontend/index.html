@@ -2,21 +2,28 @@
 <html>
 <head>
   <title>Notes App</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    input { padding: 8px; width: 250px; }
+    button { margin-left: 5px; padding: 5px 10px; }
+    .note { margin-top: 10px; }
+    .highlight { background-color: yellow; }
+  </style>
 </head>
 <body>
 
 <h2>Notes App</h2>
 
-<textarea id="noteInput"></textarea>
+<input id="noteInput" placeholder="Write note..." />
 <button onclick="addNote()">Add</button>
 
 <ul id="notesList"></ul>
 
 <script>
-const API = "http://localhost:3000";
+const API = "http://backend-service:5000/notes";
 
 async function fetchNotes() {
-  const res = await fetch(API + "/notes");
+  const res = await fetch(API);
   const data = await res.json();
 
   const list = document.getElementById("notesList");
@@ -24,16 +31,16 @@ async function fetchNotes() {
 
   data.forEach(note => {
     const li = document.createElement("li");
+    li.className = "note " + (note.highlight ? "highlight" : "");
 
     li.innerHTML = `
-      <span style="background:${note.highlight ? 'yellow':'white'}">
-        ${note.text}
-      </span>
+      <span>${note.text}</span>
       <button onclick="editNote('${note._id}', '${note.text}')">Edit</button>
       <button onclick="deleteNote('${note._id}')">Delete</button>
-      <button onclick="toggleHighlight('${note._id}', ${note.highlight})">⭐</button>
+      <button onclick="toggleHighlight('${note._id}', ${note.highlight})">
+        ${note.highlight ? "Unhighlight" : "Highlight"}
+      </button>
     `;
-
     list.appendChild(li);
   });
 }
@@ -41,36 +48,42 @@ async function fetchNotes() {
 async function addNote() {
   const text = document.getElementById("noteInput").value;
 
-  await fetch(API + "/notes", {
+  await fetch(API, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text })
   });
 
+  document.getElementById("noteInput").value = "";
   fetchNotes();
-}
-
-function editNote(id, oldText) {
-  const newText = prompt("Edit:", oldText);
-
-  fetch(API + "/notes/" + id, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text: newText })
-  }).then(fetchNotes);
 }
 
 async function deleteNote(id) {
-  await fetch(API + "/notes/" + id, { method: "DELETE" });
+  await fetch(`${API}/${id}`, { method: "DELETE" });
   fetchNotes();
 }
 
-function toggleHighlight(id, current) {
-  fetch(API + "/notes/" + id, {
+async function editNote(id, oldText) {
+  const newText = prompt("Edit note:", oldText);
+  if (!newText) return;
+
+  await fetch(`${API}/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text: newText })
+  });
+
+  fetchNotes();
+}
+
+async function toggleHighlight(id, current) {
+  await fetch(`${API}/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ highlight: !current })
-  }).then(fetchNotes);
+  });
+
+  fetchNotes();
 }
 
 fetchNotes();
