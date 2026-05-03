@@ -44,4 +44,6 @@ app.delete("/notes/:id", async (req, res) => {
   res.send("Deleted");
 });
 
-app.listen(3000, () => console.log("Backend running"));
+app.listen(5000, "0.0.0.0", () => {
+  console.log("Backend running on port 5000");
+});
