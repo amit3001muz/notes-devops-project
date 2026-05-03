@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: <your-dockerhub>/frontend
+        image: amit3001muz/frontend
         ports:
         - containerPort: 80

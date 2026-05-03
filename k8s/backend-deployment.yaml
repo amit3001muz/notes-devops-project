@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: backend
-        image: <your-dockerhub>/backend
+        image: amit3001muz/backend
         ports:
         - containerPort: 3000
