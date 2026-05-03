@@ -14,6 +14,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: amit3001muz/frontend
+        image: amit3001muz/frontend:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
