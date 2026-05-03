@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Notes App</title>
+</head>
+<body>
+
+<h2>Notes App</h2>
+
+<textarea id="noteInput"></textarea>
+<button onclick="addNote()">Add</button>
+
+<ul id="notesList"></ul>
+
+<script>
+const API = "http://localhost:3000";
+
+async function fetchNotes() {
+  const res = await fetch(API + "/notes");
+  const data = await res.json();
+
+  const list = document.getElementById("notesList");
+  list.innerHTML = "";
+
+  data.forEach(note => {
+    const li = document.createElement("li");
+
+    li.innerHTML = `
+      <span style="background:${note.highlight ? 'yellow':'white'}">
+        ${note.text}
+      </span>
+      <button onclick="editNote('${note._id}', '${note.text}')">Edit</button>
+      <button onclick="deleteNote('${note._id}')">Delete</button>
+      <button onclick="toggleHighlight('${note._id}', ${note.highlight})">⭐</button>
+    `;
+
+    list.appendChild(li);
+  });
+}
+
+async function addNote() {
+  const text = document.getElementById("noteInput").value;
+
+  await fetch(API + "/notes", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text })
+  });
+
+  fetchNotes();
+}
+
+function editNote(id, oldText) {
+  const newText = prompt("Edit:", oldText);
+
+  fetch(API + "/notes/" + id, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text: newText })
+  }).then(fetchNotes);
+}
+
+async function deleteNote(id) {
+  await fetch(API + "/notes/" + id, { method: "DELETE" });
+  fetchNotes();
+}
+
+function toggleHighlight(id, current) {
+  fetch(API + "/notes/" + id, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ highlight: !current })
+  }).then(fetchNotes);
+}
+
+fetchNotes();
+</script>
+
+</body>
+</html>

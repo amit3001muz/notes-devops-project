@@ -1,0 +1,22 @@
+name: Deploy App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Backend
+        run: docker build -t <your-dockerhub>/backend ./backend
+
+      - name: Push Backend
+        run: docker push <your-dockerhub>/backend
+
+      - name: Deploy
+        run: kubectl apply -f k8s/
